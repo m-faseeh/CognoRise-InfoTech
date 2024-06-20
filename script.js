@@ -1,95 +1,52 @@
-let currentNumber = '';
-let previousNumber = '';
-let operation = undefined;
+let countdownInterval;
 
-function appendNumber(number) {
-    if (number === '.' && currentNumber.includes('.')) return;
-    currentNumber = currentNumber.toString() + number.toString();
-    updateDisplay();
-}
+function startCountdown() {
+    const targetDateInput = document.getElementById('target-date').value;
+    const targetTimeInput = document.getElementById('target-time').value;
 
-function updateDisplay() {
-    document.getElementById('display').value = currentNumber;
-}
-
-function chooseOperation(op) {
-    if (currentNumber === '') return;
-    if (previousNumber !== '') {
-        calculate();
+    if (!targetDateInput || !targetTimeInput) {
+        alert('Please set a target date and time.');
+        return;
     }
-    operation = op;
-    previousNumber = currentNumber;
-    currentNumber = '';
-}
 
-function calculate() {
-    let result;
-    const prev = parseFloat(previousNumber);
-    const current = parseFloat(currentNumber);
-    if (isNaN(prev) || isNaN(current)) return;
-    switch (operation) {
-        case '+':
-            result = prev + current;
-            break;
-        case '-':
-            result = prev - current;
-            break;
-        case '*':
-            result = prev * current;
-            break;
-        case '/':
-            result = prev / current;
-            break;
-        default:
+    const targetDateTime = new Date(`${targetDateInput}T${targetTimeInput}:00`);
+
+    function updateCountdown() {
+        const now = new Date();
+        const timeDifference = targetDateTime - now;
+
+        if (timeDifference <= 0) {
+            clearInterval(countdownInterval);
+            document.getElementById('countdown').innerHTML = '<h2 style="color: red;">Countdown Completed!</h2>';
             return;
+        }
+
+        const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
+
+        document.getElementById('days').textContent = String(days).padStart(2, '0');
+        document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+        document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+        document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
     }
-    currentNumber = result;
-    operation = undefined;
-    previousNumber = '';
-    updateDisplay();
+
+    updateCountdown();
+    countdownInterval = setInterval(updateCountdown, 1000);
 }
 
-function clearDisplay() {
-    currentNumber = '';
-    previousNumber = '';
-    operation = undefined;
-    updateDisplay();
-}
-
-function clearEntry() {
-    currentNumber = '';
-    updateDisplay();
-}
-
-function deleteNumber() {
-    currentNumber = currentNumber.toString().slice(0, -1);
-    updateDisplay();
-}
-
-function toggleSign() {
-    if (currentNumber) {
-        currentNumber = (parseFloat(currentNumber) * -1).toString();
-        updateDisplay();
-    }
-}
-
-function reciprocal() {
-    if (currentNumber) {
-        currentNumber = (1 / parseFloat(currentNumber)).toString();
-        updateDisplay();
-    }
-}
-
-function square() {
-    if (currentNumber) {
-        currentNumber = (parseFloat(currentNumber) ** 2).toString();
-        updateDisplay();
-    }
-}
-
-function squareRoot() {
-    if (currentNumber) {
-        currentNumber = Math.sqrt(parseFloat(currentNumber)).toString();
-        updateDisplay();
-    }
+function resetCountdown() {
+    clearInterval(countdownInterval);
+    document.getElementById('target-date').value = '';
+    document.getElementById('target-time').value = '';
+    document.getElementById('days').textContent = '00';
+    document.getElementById('hours').textContent = '00';
+    document.getElementById('minutes').textContent = '00';
+    document.getElementById('seconds').textContent = '00';
+    document.getElementById('countdown').innerHTML = `
+            <div id="days" class="time">00</div><p>Days</p>
+            <div id="hours" class="time">00</div><p>Hrs</p>
+            <div id="minutes" class="time">00</div><p>Min</p>
+            <div id="seconds" class="time"style="color: red;">00</div><p style="color: red;">Sec</p>`;
 }
